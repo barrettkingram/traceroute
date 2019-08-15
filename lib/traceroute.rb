@@ -43,7 +43,14 @@ class Traceroute
   end
 
   def unused_routes
-    routed_actions - defined_action_methods
+    routed_actions.reject do |action|
+      defined_action_methods.include?(action) || begin
+        formats = ActionView::Base.default_formats
+        handlers = ActionView::Template::Handlers.extensions
+        options = { variants: [], locale: [], formats: formats , handlers: handlers }
+        ActionController::Base.view_paths.exists? action.gsub("#", "/"), "", false, options
+      end
+    end
   end
 
   def unreachable_action_methods
